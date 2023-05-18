@@ -1,0 +1,1 @@
+Telegram bot assistant who will prompt and guide you in choosing a purchase
