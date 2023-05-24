@@ -1,3 +1,5 @@
+import requests
+
 from scripts import *
 from keyboards import *
 
@@ -44,7 +46,7 @@ async def show_fqa(call):
 @dp.callback_query_handler(lambda c: c.data == 'search')
 async def show_fqa(call):
     await bot.answer_callback_query(call.id)
-    await call.message.edit_text(MSG_ERR, reply_markup=backKb)
+    await call.message.edit_text(MSG_SEARCH, reply_markup=backKb)
 
 
 # Запустить окно по вопросам
@@ -56,29 +58,36 @@ async def show_ask(call):
 
 #################################################################
 
-# Получить текущую стоимость на бирже
-def get_factor():
-    return 11.7
+URL = 'https://www.x-rates.com/calculator/?from=CNY'
+
+
+# Перевести цену с юаней в доллары/рубли
+def get_price(amount, to):
+    text = str(requests.get(f"{URL}&to={to}&amount={amount}").content)
+    text = text[text.find('ccOutputRslt')+14:]
+    return text[:text.index('<')]
 
 
 # Сцена для тестовой модели
 @dp.message_handler(state=CMD.calc)
 async def playEmotion(message: Message, state):
-    text = message.text
+    amount = message.text
 
-    if text.lower() in ('выход', '/start'):
+    if amount.lower() in ('выход', '/start'):
         await state.finish()
         await message.answer('Выход в Главное меню', reply_markup=noneKb)
         return await show_homepage(message)
 
-    if len(text) > 15:
+    if len(amount) > 15:
         return await message.answer(f'Слишком большой ввод!')
 
-    if not text.replace('.', '', 1).isdigit():
-        return await message.answer(f'Некорректный ввод - `{text}`')
+    if not amount.replace('.', '', 1).isdigit():
+        return await message.answer(f'Некорректный ввод - `{amount}`')
 
-    factor = get_factor()
-    text = float(text)
+    amount = round(float(amount), 2)
+    rub = get_price(amount, 'RUB')
+    usd = get_price(amount, 'USD')
 
-    msg = f'Текущий курс - 100:{factor}\n\n{text:.2f} ₽ -> {text * factor:.2f} $'
+    msg = (f'Текущий курс на {amount} юаней:\n\nРубль - {rub} ₽\n'
+           f'Доллар - {usd} $')
     await message.answer(msg)

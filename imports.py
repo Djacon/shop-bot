@@ -34,8 +34,8 @@ async def exception_handler(*_):
 # Показать главное меню
 async def show_homepage(call, is_edit=False):
     user = call.from_user.first_name
-    greet = (f'Приветствую вас, {user}!\n\n(здесь будет расположено адекватное'
-             ' описание):')
+    greet = (f'Приветствую вас, {user}!\n\n(здесь будет расположено '
+             'описание бота):')
     if is_edit:
         await bot.answer_callback_query(call.id)
         return await call.message.edit_text(greet, reply_markup=mainKb)
