@@ -3,36 +3,30 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.types import ReplyKeyboardRemove
 
 
-# def getModelKeyboard(i: int, isAdmin: bool):
-#     sub = InlineKeyboardButton('✍ Воспользоваться нейросетью',
-#                                callback_data=f'open-{i}')
-#     back = InlineKeyboardButton('⬅ Назад', callback_data='models')
-#     homepage = InlineKeyboardButton('🏠 На главную', callback_data='homepage')
-#     models_keyboard = InlineKeyboardMarkup(resize_keyboard=True)
-#     if not isAdmin:
-#         return models_keyboard.add(sub).row(back, homepage)
-#     edit = InlineKeyboardButton('Отредактировать',
-#                                 callback_data=f'editModel-{i}')
-#     return models_keyboard.add(sub).row(edit).row(back, homepage)
-
-
 def getMainKeyboard():
     order = InlineKeyboardButton('🛍️ Оформить заказ', callback_data='order')
     calc = InlineKeyboardButton('💰 Калькулятор стоимости',
                                 callback_data='calc')
-    return InlineKeyboardMarkup(resize_keyboard=True, row_width=1).add(order,
-                                                                       calc)
+    reviews = InlineKeyboardButton('💬 Отзывы о нашей работе',
+                                   callback_data='reviews')
+    fqa = InlineKeyboardButton('📚 Ответы на популярные вопросы',
+                               callback_data='fqa')
+    search = InlineKeyboardButton('🔎 Отследить посылку',
+                                  callback_data='search')
+    ask = InlineKeyboardButton('📞 Задать вопрос',
+                               callback_data='ask')
+    kb = InlineKeyboardMarkup(resize_keyboard=True, row_width=1)
+    return kb.add(order, calc, reviews, fqa, search, ask)
 
 
-def getCancelKeyboard(i: int = 0):
-    cancel = InlineKeyboardButton('Отмена', callback_data=f'cancel-{i}')
+def getBackKeyboard():
+    cancel = InlineKeyboardButton('↪️ Вернуться в меню',
+                                  callback_data=f'homepage')
     return InlineKeyboardMarkup(resize_keyboard=True).add(cancel)
 
 
 mainKb = getMainKeyboard()
-
-cancelKb = KeyboardButton('Отмена')
-cancelKb = ReplyKeyboardMarkup(resize_keyboard=True).add(cancelKb)
+backKb = getBackKeyboard()
 
 exitKb = KeyboardButton('Выход')
 exitKb = ReplyKeyboardMarkup(resize_keyboard=True).add(exitKb)

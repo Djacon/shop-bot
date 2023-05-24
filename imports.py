@@ -2,7 +2,7 @@ from aiogram.types import Message
 from aiogram import Bot, Dispatcher
 from aiogram.utils.exceptions import MessageNotModified, RetryAfter
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
-# from aiogram.dispatcher.filters.state import State, StatesGroup
+from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from os import environ
 

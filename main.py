@@ -3,6 +3,7 @@ from aiogram import executor
 from imports import *
 
 from keyboards import *
+from functions import *
 from admin import *
 
 
