@@ -6,6 +6,7 @@ from aiogram.dispatcher.filters.state import State, StatesGroup
 
 from os import environ
 
+from scripts import *
 from keyboards import mainKb
 
 # Токен для получения доступа к боту
@@ -33,10 +34,7 @@ async def exception_handler(*_):
 
 # Показать главное меню
 async def show_homepage(call, is_edit=False):
-    user = call.from_user.first_name
-    greet = (f'Приветствую вас, {user}!\n\n(здесь будет расположено '
-             'описание бота):')
     if is_edit:
         await bot.answer_callback_query(call.id)
-        return await call.message.edit_text(greet, reply_markup=mainKb)
-    await call.answer(greet, reply_markup=mainKb)
+        return await call.message.edit_text(MSG_GREET, reply_markup=mainKb)
+    await call.answer(MSG_GREET, reply_markup=mainKb)

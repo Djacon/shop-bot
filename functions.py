@@ -1,6 +1,5 @@
 import requests
 
-from scripts import *
 from keyboards import *
 
 from imports import *
@@ -14,8 +13,19 @@ class CMD(StatesGroup):
 # Запустить окно c оформлением заказа
 @dp.callback_query_handler(lambda c: c.data == 'order')
 async def show_order(call):
-    await bot.answer_callback_query(call.id)
-    await call.message.edit_text(MSG_ERR, reply_markup=backKb)
+    await call.message.delete()
+
+    photo = open('guide.jpg', 'rb')
+    guide = await call.message.answer_photo(
+        photo, caption='<b>Гайд "Как правильно оформить заказ</b>"',
+        parse_mode='HTML')
+    msg_id = guide.message_id
+
+    photo = open('instruction.jpg', 'rb')
+    await call.message.answer_photo(
+        photo, caption=MSG_ORDER,
+        parse_mode='HTML',
+        reply_markup=getOrderKeyboard(msg_id))
 
 
 # Запустить окно с калькулятором стоимости

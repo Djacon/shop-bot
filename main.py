@@ -19,6 +19,16 @@ async def back_to_homepage(call):
     await show_homepage(call, is_edit=True)
 
 
+# Вернуться на главную страницу /start
+@dp.callback_query_handler(lambda c: c.data.startswith('order2home'))
+async def back_to_homepage(call):
+    msg_id = int(call.data.split('?')[1])
+    await bot.delete_message(chat_id=call.from_user.id,
+                             message_id=msg_id)
+    await call.message.delete()
+    await call.message.answer(MSG_GREET, reply_markup=mainKb)
+
+
 # Сообщение об успешном запуске бота
 async def on_startup(_):
     for ADMIN_ID in ADMIN_IDS:
