@@ -4,19 +4,20 @@ from aiogram.types import ReplyKeyboardRemove
 
 
 def getMainKeyboard():
-    order = InlineKeyboardButton('🛍️ Оформить заказ', callback_data='order')
-    calc = InlineKeyboardButton('💰 Калькулятор стоимости',
+    calc = InlineKeyboardButton('💸 Калькулятор стоимости',
                                 callback_data='calc')
-    reviews = InlineKeyboardButton('💬 Отзывы о нашей работе',
-                                   callback_data='reviews')
-    fqa = InlineKeyboardButton('📚 Ответы на популярные вопросы',
-                               callback_data='fqa')
+    order = InlineKeyboardButton('🛒 Оформить заказ', callback_data='order')
     search = InlineKeyboardButton('🔎 Отследить посылку',
                                   callback_data='search')
-    ask = InlineKeyboardButton('📞 Задать вопрос',
-                               callback_data='ask')
+    reviews = InlineKeyboardButton('📋 Отзывы о нашей работе ',
+                                   callback_data='reviews')
+    mark = InlineKeyboardButton('🛍️ Market OQ (IN STOCK)',
+                                callback_data='market')
+    ask = InlineKeyboardButton('📞 Связь с нами', callback_data='ask')
+    faq = InlineKeyboardButton('❔ FAQ', callback_data='faq')
+
     kb = InlineKeyboardMarkup(resize_keyboard=True, row_width=1)
-    return kb.add(order, calc, reviews, fqa, search, ask)
+    return kb.add(calc, order, search, reviews, mark, ask, faq)
 
 
 def getBackKeyboard():

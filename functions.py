@@ -36,15 +36,15 @@ async def show_reviews(call):
 
 
 # Запустить окно с популярными вопросами-ответами
-@dp.callback_query_handler(lambda c: c.data == 'fqa')
-async def show_fqa(call):
+@dp.callback_query_handler(lambda c: c.data == 'faq')
+async def show_faq(call):
     await bot.answer_callback_query(call.id)
-    await call.message.edit_text(MSG_ERR, reply_markup=backKb)
+    await call.message.edit_text(MSG_FAQ, reply_markup=backKb)
 
 
 # Запустить окно с отслеживанием посылки
 @dp.callback_query_handler(lambda c: c.data == 'search')
-async def show_fqa(call):
+async def show_search(call):
     await bot.answer_callback_query(call.id)
     await call.message.edit_text(MSG_SEARCH, reply_markup=backKb)
 
@@ -54,6 +54,13 @@ async def show_fqa(call):
 async def show_ask(call):
     await bot.answer_callback_query(call.id)
     await call.message.edit_text(ASK_MSG, reply_markup=backKb)
+
+
+# Запустить окно по вопросам
+@dp.callback_query_handler(lambda c: c.data == 'market')
+async def show_market(call):
+    await bot.answer_callback_query(call.id)
+    await call.message.edit_text(MSG_ERR, reply_markup=backKb)
 
 
 #################################################################
