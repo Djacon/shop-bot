@@ -4,14 +4,8 @@
 # Pycache
 __pycache__
 
-# Models
-yolov8s.pt
-yolov8s-seg.pt
-
 # Custom Folders
 photos/
-videos/
-animations/
 
-# Examples
-bus.jpg
+# Secret Files
+secret.json

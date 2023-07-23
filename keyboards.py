@@ -3,10 +3,20 @@ from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.types import ReplyKeyboardRemove
 
 
+ITEM_TYPE = {
+    'winter': '🥾 Зимняя обувь',
+    'summer': '👟 Летняя обувь',
+    'tshirt': '👕 Футболки / Штаны / Шорты',
+    'shorts': '👖 Джинсы / Худи / Куртки',
+    'access': '👜 Сумки / Аксессуары / Парфюмы',
+    'underw': '🧦 Нижнее белье',
+}
+
+
 def getMainKeyboard():
     calc = InlineKeyboardButton('💸 Калькулятор стоимости',
                                 callback_data='calc')
-    order = InlineKeyboardButton('🛒 Оформить заказ', callback_data='order')
+    order = InlineKeyboardButton('🛍️ Оформить заказ', callback_data='order')
     search = InlineKeyboardButton('🔎 Отследить посылку',
                                   callback_data='search')
     reviews = InlineKeyboardButton('📋 Отзывы о нашей работе ',
@@ -15,29 +25,30 @@ def getMainKeyboard():
                                 callback_data='market')
     ask = InlineKeyboardButton('📞 Связь с нами', callback_data='ask')
     faq = InlineKeyboardButton('❔ FAQ', callback_data='faq')
+    cart = InlineKeyboardButton('🛒 Мои заказы', callback_data='cart')
 
     kb = InlineKeyboardMarkup(resize_keyboard=True, row_width=1)
-    return kb.add(calc, order, search, reviews, mark, ask, faq)
+    return kb.add(order, calc, search, reviews, mark, ask, faq, cart)
 
 
 def getOrderKeyboard(msg_id):
+    prchs = f'purchase?{msg_id}&'
+    btns = []
+    for type in ITEM_TYPE:
+        btns.append(InlineKeyboardButton(ITEM_TYPE[type],
+                                         callback_data=f'{prchs}{type}'))
     search = InlineKeyboardButton('🔍 Где найти цену в юанях?',
                                   callback_data='order2search')
-    winter = InlineKeyboardButton('🥾 Зимняя обувь', callback_data='winter')
-    summer = InlineKeyboardButton('👟 Летняя обувь', callback_data='summer')
-
-    tshirt = InlineKeyboardButton('👕 Футболки / Шорты / Худи',
-                                  callback_data='tshirt')
-    shorts = InlineKeyboardButton('👖 Джинсы / Штаны / Шорты',
-                                  callback_data='shorts')
-    access = InlineKeyboardButton('👜 Сумки / Аксессуары / Парфюмы',
-                                  callback_data='access')
-    underw = InlineKeyboardButton('🧦 Нижнее белье', callback_data='underw')
     cancel = InlineKeyboardButton('↪️ Вернуться в меню',
                                   callback_data=f'order2home?{msg_id}')
     kb = InlineKeyboardMarkup(resize_keyboard=True, row_width=1)
-    return kb.row(search).row(winter, summer).add(tshirt, shorts, access,
-                                                  underw, cancel)
+    return kb.row(search).row(btns[0], btns[1]).add(*btns[2:], cancel)
+
+
+def getConfirmOrderKeyboard():
+    nope = KeyboardButton('✏️ Изменить')
+    yes = KeyboardButton('✅ Верно')
+    return ReplyKeyboardMarkup(resize_keyboard=True).row(nope).row(yes)
 
 
 def getBackKeyboard():
@@ -46,8 +57,24 @@ def getBackKeyboard():
     return InlineKeyboardMarkup(resize_keyboard=True).add(cancel)
 
 
+def getCartKeyboard():
+    clear = InlineKeyboardButton('♻️ Очистить корзину',
+                                 callback_data='cart_clear')
+    add = InlineKeyboardButton('➕ Добавить товар',
+                               callback_data='order')
+    checkout = InlineKeyboardButton('📦 Оформить заказ',
+                                    callback_data='checkout')
+    cancel = InlineKeyboardButton('↪️ Вернуться в меню',
+                                  callback_data='homepage')
+    kb = InlineKeyboardMarkup(resize_keyboard=True, row_width=1)
+    return kb.add(clear, add, checkout, cancel)
+
+
 mainKb = getMainKeyboard()
 backKb = getBackKeyboard()
+
+cartKb = getCartKeyboard()
+confirmKb = getConfirmOrderKeyboard()
 
 exitKb = KeyboardButton('Выход')
 exitKb = ReplyKeyboardMarkup(resize_keyboard=True).add(exitKb)
