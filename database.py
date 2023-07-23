@@ -6,8 +6,13 @@ from uploader import upload_orders, upload_user, get_orders_user_count_info
 class ShopDB:
     def __init__(self, filename):
         self.filename = filename
-        with open(filename, 'r') as f:
-            self.db = json.load(f)
+        try:
+            with open(filename, 'r') as f:
+                self.db = json.load(f)
+        except FileNotFoundError:
+            with open(filename, 'w') as f:
+                f.write('{}')
+                self.db = {}
 
     def addUser(self, userid):
         self.db[str(userid)] = []

@@ -1,8 +1,4 @@
-from imports import Message, dp
-
-
-# ADMIN_IDS = [915782472, 535118187]
-ADMIN_IDS = [915782472]
+from imports import Message, dp, ADMIN_IDS
 
 
 def isAdmin(message) -> bool:

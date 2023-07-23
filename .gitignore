@@ -8,4 +8,6 @@ __pycache__
 photos/
 
 # Secret Files
-secret.json
+test.py
+token.json
+orders.json

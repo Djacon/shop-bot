@@ -491,8 +491,6 @@ async def calculator(message: Message, state):
     elif text != '✅ верно':
         return await message.answer(MSG_ORDER_ERR)
 
-    ADMIN_IDS = [915782472, 535118187]
-
     msg_ans = await message.answer(MSG_WAIT, reply_markup=noneKb)
 
     try:
