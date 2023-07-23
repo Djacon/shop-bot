@@ -46,7 +46,4 @@ async def message_not_modified_handler(*_):
 # Показать главное меню
 async def show_homepage(call, is_edit=False):
     photo = open('img/logo.png', 'rb')
-    if is_edit:
-        return await call.answer_photo(photo, caption=MSG_GREET,
-                                       reply_markup=mainKb)
     await call.answer_photo(photo, caption=MSG_GREET, reply_markup=mainKb)

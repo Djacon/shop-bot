@@ -31,10 +31,10 @@ def get_delivery_price(type, size, by_plane=False):
     comm, mass = 0, (120 if by_plane else 55)
     if type == 'winter':
         comm = 1190
-        mass *= 2 if size < 41 else 2.3
+        mass *= 2 if size < 42 else 2.3
     elif type == 'summer':
         comm = 1190
-        mass *= 1.5 if size < 41 else 1.8
+        mass *= 1.5 if size < 42 else 1.8
     elif type == 'shorts':
         comm = 1000
     elif type == 'tshirt':
@@ -91,7 +91,6 @@ async def back_to_homepage(call):
 
     await call.message.delete()
     await show_homepage(call.message)
-    # await call.message.answer(MSG_GREET, reply_markup=mainKb)
 
 
 @dp.callback_query_handler(lambda c: c.data.startswith('purchase'))
@@ -162,7 +161,7 @@ async def calculator(message: Message, state):
     text = message.text.lower()
     if text in ('выход', '/start'):
         return await clear_state_and_show_home(message, state)
-    elif text.isdigit() and 35 < int(text) < 48:
+    elif text.isdigit() and 33 < int(text) < 51:
         async with state.proxy() as data:
             data['order_size'] = int(text)
 
@@ -266,7 +265,7 @@ async def calculator(call, state):
     await state.finish()
     msg = await message.answer('Переход в корзину', reply_markup=noneKb)
     await msg.delete()
-    await show_cartpage(message, userid, False)
+    await show_cartpage(message, userid)
 
 
 ######################################################################
@@ -320,7 +319,7 @@ async def show_market(call):
 async def show_cart(call):
     await call.message.delete()
     userid = call.from_user.id
-    await show_cartpage(call.message, userid, False)
+    await show_cartpage(call.message, userid)
 
 #################################################################
 
@@ -387,7 +386,7 @@ async def calculator(message: Message, state):
 #################################################################
 
 
-async def show_cartpage(message, userid, is_edit=True):
+async def show_cartpage(message, userid):
     orders = DB.getOrders(userid)
     if not orders:
         return await message.answer(MSG_CART_ERR, reply_markup=backKb)
@@ -401,8 +400,6 @@ async def show_cartpage(message, userid, is_edit=True):
                      f"Стоимость: {order['cost']} руб")
         total += order['cost']
     purch.append(f'💴 Итоговая стоимость корзины: {total} руб')
-    if is_edit:
-        return await message.edit_text('\n\n'.join(purch), reply_markup=cartKb)
     await message.answer('\n\n'.join(purch), reply_markup=cartKb)
 
 
@@ -412,7 +409,7 @@ async def show_cart(call):
 
     userid = call.from_user.id
     DB.clearCart(userid)
-    await show_homepage(call.message, is_edit=True)
+    await show_homepage(call.message)
 
 
 @dp.callback_query_handler(lambda c: c.data == 'checkout')
@@ -495,7 +492,7 @@ async def calculator(call, state):
         await state.finish()
         msg = await message.answer('Переход в корзину', reply_markup=noneKb)
         await msg.delete()
-        return await show_cartpage(message, userid, False)
+        return await show_cartpage(message, userid)
 
     msg_ans = await message.answer(MSG_WAIT, reply_markup=noneKb)
 
@@ -522,5 +519,5 @@ async def calculator(call, state):
 
     except Exception as e:
         await state.finish()
-        await bot.send_message(915782472, f'Error: {e}')
+        await bot.send_message(915782472, f'!!!! Error: {e}')
         return await msg_ans.edit_text(MSG_API_ERR)
