@@ -46,9 +46,9 @@ def getOrderKeyboard(msg_id):
 
 
 def getConfirmOrderKeyboard():
-    nope = KeyboardButton('✏️ Изменить')
-    yes = KeyboardButton('✅ Верно')
-    return ReplyKeyboardMarkup(resize_keyboard=True).row(nope).row(yes)
+    edit = InlineKeyboardButton('✏️ Изменить', callback_data='_edit')
+    yes = InlineKeyboardButton('✅ Верно', callback_data='_yes')
+    return InlineKeyboardMarkup(resize_keyboard=True).row(edit).row(yes)
 
 
 def getBackKeyboard():

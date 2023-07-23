@@ -82,19 +82,29 @@ async def showOrder(call):
 @dp.callback_query_handler(lambda c: c.data.startswith('order2home'))
 async def back_to_homepage(call):
     msg_id = int(call.data.split('?')[1])
-    await bot.delete_message(chat_id=call.from_user.id,
-                             message_id=msg_id)
+    # _
+    try:
+        await bot.delete_message(chat_id=call.from_user.id,
+                                 message_id=msg_id)
+    except Exception:
+        pass
+
     await call.message.delete()
-    await call.message.answer(MSG_GREET, reply_markup=mainKb)
+    await show_homepage(call.message)
+    # await call.message.answer(MSG_GREET, reply_markup=mainKb)
 
 
 @dp.callback_query_handler(lambda c: c.data.startswith('purchase'))
 async def show_order_example(call):
     msg_id, cat = call.data.split('?')[1].split('&')
     msg_id = int(msg_id)
+    # _
+    try:
+        await bot.delete_message(chat_id=call.from_user.id,
+                                 message_id=msg_id)
+    except Exception:
+        pass
 
-    await bot.delete_message(chat_id=call.from_user.id,
-                             message_id=msg_id)
     await call.message.delete()
 
     if cat == 'access':
@@ -237,18 +247,17 @@ async def calculator(message: Message, state):
         data['order_photo'] = await get_filepath(data['order_photo'])
 
 
-@dp.message_handler(state=CMD.order_confirm)
-async def calculator(message: Message, state):
-    text = message.text.lower()
-    if text == '/start':
-        return await clear_state_and_show_home(message, state)
-    elif text == '✏️ изменить':
+@dp.callback_query_handler(text_startswith='_', state=CMD.order_confirm)
+async def calculator(call, state):
+    await call.message.delete()
+
+    message = call.message
+    text = call.data
+    if text == '_edit':
         await state.finish()
         return await show_order(message)
-    elif text != '✅ верно':
-        return await message.answer(MSG_ORDER_ERR)
 
-    userid = message.from_user.id
+    userid = call.from_user.id
     async with state.proxy() as data:
         DB.addOrder(userid, data['order_type'], data['order_photo'],
                     data['order_src'], data['order_size'],
@@ -267,7 +276,6 @@ async def calculator(message: Message, state):
 @dp.callback_query_handler(lambda c: c.data == 'calc')
 async def show_calc(call):
     await call.message.delete()
-
     await CMD.calc.set()
     await call.message.answer(MSG_CALC, reply_markup=exitKb)
 
@@ -275,45 +283,44 @@ async def show_calc(call):
 # Ссылка на отзывы
 @dp.callback_query_handler(lambda c: c.data == 'reviews')
 async def show_reviews(call):
-    await bot.answer_callback_query(call.id)
-    await call.message.edit_text(MSG_ERR, reply_markup=backKb)
+    await call.message.delete()
+    await call.message.answer(MSG_ERR, reply_markup=backKb)
 
 
 # Запустить окно с популярными вопросами-ответами
 @dp.callback_query_handler(lambda c: c.data == 'faq')
 async def show_faq(call):
-    await bot.answer_callback_query(call.id)
-    await call.message.edit_text(MSG_FAQ, reply_markup=backKb)
+    await call.message.delete()
+    await call.message.answer(MSG_FAQ, reply_markup=backKb)
 
 
 # Запустить окно с отслеживанием посылки
 @dp.callback_query_handler(lambda c: c.data == 'search')
 async def show_search(call):
-    await bot.answer_callback_query(call.id)
-    await call.message.edit_text(MSG_SEARCH, reply_markup=backKb)
+    await call.message.delete()
+    await call.message.answer(MSG_SEARCH, reply_markup=backKb)
 
 
 # Запустить окно по вопросам
 @dp.callback_query_handler(lambda c: c.data == 'ask')
 async def show_ask(call):
-    await bot.answer_callback_query(call.id)
-    await call.message.edit_text(ASK_MSG, reply_markup=backKb)
+    await call.message.delete()
+    await call.message.answer(ASK_MSG, reply_markup=backKb)
 
 
 # Запустить окно по вопросам
 @dp.callback_query_handler(lambda c: c.data == 'market')
 async def show_market(call):
-    await bot.answer_callback_query(call.id)
-    await call.message.edit_text(MSG_ERR, reply_markup=backKb)
+    await call.message.delete()
+    await call.message.answer(MSG_ERR, reply_markup=backKb)
 
 
 # Запустить окно по вопросам
 @dp.callback_query_handler(lambda c: c.data == 'cart')
 async def show_cart(call):
-    await bot.answer_callback_query(call.id)
-
+    await call.message.delete()
     userid = call.from_user.id
-    await show_cartpage(call.message, userid)
+    await show_cartpage(call.message, userid, False)
 
 #################################################################
 
@@ -383,7 +390,7 @@ async def calculator(message: Message, state):
 async def show_cartpage(message, userid, is_edit=True):
     orders = DB.getOrders(userid)
     if not orders:
-        return await message.edit_text(MSG_CART_ERR, reply_markup=backKb)
+        return await message.answer(MSG_CART_ERR, reply_markup=backKb)
 
     purch = [f'🛒 Количество вещей в корзине: {len(orders)}']
     total = 0
@@ -405,7 +412,7 @@ async def show_cart(call):
 
     userid = call.from_user.id
     DB.clearCart(userid)
-    await show_homepage(call, is_edit=True)
+    await show_homepage(call.message, is_edit=True)
 
 
 @dp.callback_query_handler(lambda c: c.data == 'checkout')
@@ -476,20 +483,19 @@ async def calculator(message: Message, state):
     await message.answer(MSG_ORDER_ERR)
 
 
-@dp.message_handler(state=CMD.cart_confirm)
-async def calculator(message: Message, state):
-    text = message.text.lower()
-    userid = message.from_user.id
+@dp.callback_query_handler(text_startswith='_', state=CMD.cart_confirm)
+async def calculator(call, state):
+    await call.message.delete()
 
-    if text == '/start':
-        return await clear_state_and_show_home(message, state)
-    elif text == '✏️ изменить':
+    text = call.data
+    message = call.message
+    userid = call.from_user.id
+
+    if text == '_edit':
         await state.finish()
         msg = await message.answer('Переход в корзину', reply_markup=noneKb)
         await msg.delete()
         return await show_cartpage(message, userid, False)
-    elif text != '✅ верно':
-        return await message.answer(MSG_ORDER_ERR)
 
     msg_ans = await message.answer(MSG_WAIT, reply_markup=noneKb)
 
@@ -515,5 +521,6 @@ async def calculator(message: Message, state):
         await message.answer(MSG_ORDER_SUCCESS, reply_markup=backKb)
 
     except Exception as e:
-        print(f'Error: {e}')
+        await state.finish()
+        await bot.send_message(915782472, f'Error: {e}')
         return await msg_ans.edit_text(MSG_API_ERR)

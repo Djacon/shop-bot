@@ -16,7 +16,8 @@ async def start(message: Message):
 # Вернуться на главную страницу /start
 @dp.callback_query_handler(lambda c: c.data == 'homepage')
 async def back_to_homepage(call):
-    await show_homepage(call, is_edit=True)
+    await call.message.delete()
+    await show_homepage(call.message, is_edit=True)
 
 
 # Сообщение об успешном запуске бота

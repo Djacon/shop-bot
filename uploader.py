@@ -9,8 +9,6 @@ creds = Credentials.from_authorized_user_file('token.json', SCOPES)
 
 SHEET_ID = '1FLOEheaUXY1TUPc8_J4DBuTxeD_8ZSIqfnuuaWset-I'
 
-FILE_URL = 'https://drive.google.com/file/d/'
-
 service = build('sheets', 'v4', credentials=creds)
 
 sheets = service.spreadsheets()
