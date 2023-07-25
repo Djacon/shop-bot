@@ -49,10 +49,10 @@ class ShopDB:
 
         userid = str(userid)
         upload_user(userinfo, user_row)
-        upload_orders(userid, self.db[userid], order_row)
+        upload_orders(userinfo[0], self.db[userid], order_row)
 
-        self.db[userid] = []
-        self._save()
+        # self.db[userid] = []
+        # self._save()
 
     def _save(self):
         with open(self.filename, 'w') as f:

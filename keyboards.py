@@ -70,10 +70,20 @@ def getCartKeyboard():
     return kb.add(clear, add, checkout, cancel)
 
 
+def getDelivKeyboard():
+    one = InlineKeyboardButton('1. До 15 дней (55¥ / 1 кг)',
+                               callback_data='_one')
+    two = InlineKeyboardButton('2. До 7 дней (120¥ / 1 кг)',
+                               callback_data='_two')
+    kb = InlineKeyboardMarkup(resize_keyboard=True, row_width=1)
+    return kb.add(one, two)
+
+
 mainKb = getMainKeyboard()
 backKb = getBackKeyboard()
 
 cartKb = getCartKeyboard()
+delivKb = getDelivKeyboard()
 confirmKb = getConfirmOrderKeyboard()
 
 exitKb = KeyboardButton('Выход')

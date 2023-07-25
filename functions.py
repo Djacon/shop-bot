@@ -161,9 +161,9 @@ async def calculator(message: Message, state):
     text = message.text.lower()
     if text in ('выход', '/start'):
         return await clear_state_and_show_home(message, state)
-    elif text.isdigit() and 33 < int(text) < 51:
+    elif match(r'^[3-5]\d(\.5)?$', text) and 33 <= float(text) <= 50:
         async with state.proxy() as data:
-            data['order_size'] = int(text)
+            data['order_size'] = float(text)
 
         photo = open('img/example4.jpg', 'rb')
         await CMD.order_price.set()
@@ -193,17 +193,15 @@ async def calculator(message: Message, state):
 
     await CMD.order_deliv.set()
     await msg_ans.delete()
-    await message.answer(MSG_ORDER_EX5)
+    await message.answer(MSG_ORDER_EX5, reply_markup=delivKb)
 
 
-@dp.message_handler(state=CMD.order_deliv)
-async def calculator(message: Message, state):
-    text = message.text.lower()
-    if text in ('выход', '/start'):
-        return await clear_state_and_show_home(message, state)
-    elif text not in ('1', '2'):
-        return await message.answer(MSG_ORDER_ERR)
+@dp.callback_query_handler(text_startswith='_', state=CMD.order_deliv)
+async def calculator(call, state):
+    message = call.message
+    text = call.data
 
+    await message.delete()
     msg_ans = await message.answer(MSG_WAIT, reply_markup=noneKb)
 
     async with state.proxy() as data:
@@ -213,7 +211,7 @@ async def calculator(message: Message, state):
         deliv_price = get_delivery_price(type, size, text == '2')
 
         data['order_price'] = rub_price + deliv_price
-        data['order_deliv'] = 'Авто' if text == '1' else 'Авиа'
+        data['order_deliv'] = 'Авто' if text == '_one' else 'Авиа'
 
         photo = data['order_photo'].file_id
         caption = f'''
@@ -440,7 +438,7 @@ async def calculator(message: Message, state):
     text = message.text.lower()
     if text in ('выход', '/start'):
         return await clear_state_and_show_home(message, state)
-    elif match(r'7\d{10}', text):
+    elif match(r'^7\d{10}$', text):
         async with state.proxy() as data:
             data['cart_phone'] = text
 
@@ -487,6 +485,7 @@ async def calculator(call, state):
     text = call.data
     message = call.message
     userid = call.from_user.id
+    username = call.from_user.username
 
     if text == '_edit':
         await state.finish()
@@ -499,12 +498,13 @@ async def calculator(call, state):
     try:
         count_purchase = len(DB.getOrders(userid))
         async with state.proxy() as data:
-            userinfo = (userid, data['cart_fullname'], data['cart_phone'],
-                        data['cart_address'])
+            userinfo = (f't.me/{username}', data['cart_fullname'],
+                        data['cart_phone'], data['cart_address'])
             DB.uploadCart(userid, userinfo)
             caption = f'''
 Информация о новом покупателе:
 
+<b>Юзер</b>: @{username}
 <b>ФИО</b>: {userinfo[1]}
 <b>Номер телефона</b>: {userinfo[2]}
 <b>Адрес доставки</b>: {userinfo[3]}
@@ -520,4 +520,4 @@ async def calculator(call, state):
     except Exception as e:
         await state.finish()
         await bot.send_message(915782472, f'!!!! Error: {e}')
-        return await msg_ans.edit_text(MSG_API_ERR)
+        return await msg_ans.edit_text(MSG_API_ERR, reply_markup=backKb)

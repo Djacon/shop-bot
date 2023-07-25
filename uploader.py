@@ -20,19 +20,19 @@ def get_orders_user_count_info():
     return 3 + int(header[0]), 3 + int(header[12])
 
 
-def get_order_query(userid, order):
+def get_order_query(username, order):
     deliv, cost, src, size = (order['deliv'], str(order['cost']), order['src'],
                               str(order['size']))
     type = ITEM_TYPE[order['type']]
     photo = f"=HYPERLINK(\"{order['photo']}\", \"Ссылка на фото\")"
 
     query = ['Принят']
-    query.extend([userid, type, deliv, cost, src, size, photo])
+    query.extend([username, type, deliv, cost, src, size, photo])
     return query
 
 
-def upload_orders(userid, orders, row):
-    values = [get_order_query(userid, order) for order in orders]
+def upload_orders(username, orders, row):
+    values = [get_order_query(username, order) for order in orders]
     row_end = row + len(values) - 1
     sheets.values().update(spreadsheetId=SHEET_ID,
                            range=f'Sheet1!C{row}:J{row_end}',
