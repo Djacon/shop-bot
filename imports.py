@@ -22,8 +22,8 @@ storage = MemoryStorage()
 dp = Dispatcher(bot, storage=storage)
 
 # ID Администраторов в телеграме
-ADMIN_IDS = [915782472]
-# ADMIN_IDS = [915782472, 535118187]
+# ADMIN_IDS = [915782472]
+ADMIN_IDS = [915782472, 535118187]
 
 
 # Игнорирование ошибки при неизмененном сообщении

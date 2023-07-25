@@ -11,3 +11,6 @@ photos/
 test.py
 token.json
 orders.json
+
+# Shell scripts
+restarter.sh
