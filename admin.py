@@ -26,4 +26,4 @@ async def users(message: Message):
     pid = str(os.getpid())
     with open('restarter.sh', 'w') as restarter:
         restarter.write(f'kill {pid}\ngit pull\npython3 main.py')
-    os.system('restarter.sh')
+    os.system('bash restarter.sh')
