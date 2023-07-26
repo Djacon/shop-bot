@@ -162,10 +162,12 @@ async def calculator(message: Message, state):
         return await clear_state_and_show_home(message, state)
 
     async with state.proxy() as data:
-        if (data['order_type'] in ('winter', 'summer')
-           and match(r'^[3-5]\d(\.5)?$', text) and 33 <= float(text) <= 59):
-            text = float(text)
-            data['order_size'] = text if text % 1 else int(text)
+        if data['order_type'] in ('winter', 'summer'):
+            if (match(r'^[3-5]\d(\.5)?$', text) and 33 <= float(text) <= 59):
+                text = float(text)
+                data['order_size'] = text if text % 1 else int(text)
+            else:
+                return await message.answer(MSG_ORDER_ERR)
         elif not match(r'^(M|(X{0,3}(S|L)))$', text):
             return await message.answer(MSG_ORDER_ERR)
         else:
@@ -176,6 +178,7 @@ async def calculator(message: Message, state):
         return await message.answer_photo(
             photo, caption=MSG_ORDER_EX4, parse_mode='HTML',
             reply_markup=exitKb)
+
 
 @dp.message_handler(state=CMD.order_price)
 async def calculator(message: Message, state):
