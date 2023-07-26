@@ -79,6 +79,12 @@ def getDelivKeyboard():
     return kb.add(one, two)
 
 
+def getDefaultOptionKeyboard(name, msg_id=None):
+    one = InlineKeyboardButton(f'По умолчанию: [{name}]',
+                               callback_data=f'_default_{name}')
+    return InlineKeyboardMarkup(resize_keyboard=True, row_width=1).add(one)
+
+
 mainKb = getMainKeyboard()
 backKb = getBackKeyboard()
 

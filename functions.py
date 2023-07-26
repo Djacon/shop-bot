@@ -82,7 +82,6 @@ async def showOrder(call):
 @dp.callback_query_handler(lambda c: c.data.startswith('order2home'))
 async def back_to_homepage(call):
     msg_id = int(call.data.split('?')[1])
-    # _
     try:
         await bot.delete_message(chat_id=call.from_user.id,
                                  message_id=msg_id)
@@ -97,7 +96,7 @@ async def back_to_homepage(call):
 async def show_order_example(call):
     msg_id, cat = call.data.split('?')[1].split('&')
     msg_id = int(msg_id)
-    # _
+
     try:
         await bot.delete_message(chat_id=call.from_user.id,
                                  message_id=msg_id)
@@ -158,21 +157,25 @@ async def calculator(message: Message, state):
 
 @dp.message_handler(state=CMD.order_size)
 async def calculator(message: Message, state):
-    text = message.text.lower()
-    if text in ('выход', '/start'):
+    text = message.text
+    if text.lower() in ('выход', '/start'):
         return await clear_state_and_show_home(message, state)
-    elif match(r'^[3-5]\d(\.5)?$', text) and 33 <= float(text) <= 50:
-        async with state.proxy() as data:
-            data['order_size'] = float(text)
+
+    async with state.proxy() as data:
+        if (data['order_type'] in ('winter', 'summer')
+           and match(r'^[3-5]\d(\.5)?$', text) and 33 <= float(text) <= 59):
+            text = float(text)
+            data['order_size'] = text if text % 1 else int(text)
+        elif not match(r'^(M|(X{0,3}(S|L)))$', text):
+            return await message.answer(MSG_ORDER_ERR)
+        else:
+            data['order_size'] = text
 
         photo = open('img/example4.jpg', 'rb')
         await CMD.order_price.set()
         return await message.answer_photo(
             photo, caption=MSG_ORDER_EX4, parse_mode='HTML',
             reply_markup=exitKb)
-
-    await message.answer(MSG_ORDER_ERR)
-
 
 @dp.message_handler(state=CMD.order_price)
 async def calculator(message: Message, state):
@@ -403,7 +406,7 @@ async def show_cartpage(message, userid):
 
 @dp.callback_query_handler(lambda c: c.data == 'cart_clear')
 async def show_cart(call):
-    await bot.answer_callback_query(call.id)
+    await call.message.delete()
 
     userid = call.from_user.id
     DB.clearCart(userid)
@@ -423,6 +426,8 @@ async def calculator(message: Message, state):
     text = message.text
     if text.lower() in ('выход', '/start'):
         return await clear_state_and_show_home(message, state)
+    elif '_' in text:
+        return await message.answer(MSG_FORBIDDEN_SYMB)
     elif len(text) < 101 and len(text.split()) > 1:
         async with state.proxy() as data:
             data['cart_fullname'] = text
@@ -453,7 +458,9 @@ async def calculator(message: Message, state):
     text = message.text
     if text.lower() in ('выход', '/start'):
         return await clear_state_and_show_home(message, state)
-    elif len(text) < 201 and len(text.split(',')) > 3:
+    elif '_' in text:
+        return await message.answer(MSG_FORBIDDEN_SYMB)
+    elif len(text) < 201:
         async with state.proxy() as data:
             data['cart_address'] = text
 
@@ -485,7 +492,7 @@ async def calculator(call, state):
     text = call.data
     message = call.message
     userid = call.from_user.id
-    username = call.from_user.username
+    username = call.from_user.username or userid
 
     if text == '_edit':
         await state.finish()
@@ -500,6 +507,7 @@ async def calculator(call, state):
         async with state.proxy() as data:
             userinfo = (f't.me/{username}', data['cart_fullname'],
                         data['cart_phone'], data['cart_address'])
+            DB.addUserinfo(userid, userinfo)
             DB.uploadCart(userid, userinfo)
             caption = f'''
 Информация о новом покупателе:

@@ -4,15 +4,25 @@ from uploader import upload_orders, upload_user, get_orders_user_count_info
 
 # Класс для работы с БД пользователей и их заказами
 class ShopDB:
-    def __init__(self, filename):
-        self.filename = filename
+    def __init__(self, order_fn, user_fn):
+        self.order_fn = order_fn
+        self.user_fn = user_fn
+
         try:
-            with open(filename, 'r') as f:
+            with open(order_fn, 'r') as f:
                 self.db = json.load(f)
         except FileNotFoundError:
-            with open(filename, 'w') as f:
+            with open(order_fn, 'w') as f:
                 f.write('{}')
                 self.db = {}
+
+        try:
+            with open(user_fn, 'r') as f:
+                self.userdb = json.load(f)
+        except FileNotFoundError:
+            with open(user_fn, 'w') as f:
+                f.write('{}')
+                self.userdb = {}
 
     def addUser(self, userid):
         self.db[str(userid)] = []
@@ -54,9 +64,20 @@ class ShopDB:
         self.db[userid] = []
         self._save()
 
+    def addUserinfo(self, userid, userinfo):
+        userid = str(userid)
+        self.userdb[userid] = {
+            'fullname': userinfo[1],
+            'phone': userinfo[2],
+            'address': userinfo[3],
+        }
+
+        with open(self.user_fn, 'w') as f:
+            json.dump(self.userdb, f)
+
     def _save(self):
-        with open(self.filename, 'w') as f:
+        with open(self.order_fn, 'w') as f:
             json.dump(self.db, f)
 
 
-DB = ShopDB('orders.json')
+DB = ShopDB('orders.json', 'users.json')
