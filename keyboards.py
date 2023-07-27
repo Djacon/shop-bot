@@ -2,6 +2,8 @@ from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
 from aiogram.types import ReplyKeyboardRemove
 
+from math import ceil
+
 
 ITEM_TYPE = {
     'winter': '🥾 Зимняя обувь',
@@ -71,11 +73,11 @@ def getCartKeyboard():
     return kb.add(clear, add, checkout, cancel)
 
 
-def getDelivKeyboard():
-    one = InlineKeyboardButton('1. До 15 дней (55¥ / 1 кг)',
-                               callback_data='_one')
-    two = InlineKeyboardButton('2. До 7 дней (120¥ / 1 кг)',
-                               callback_data='_two')
+def getDelivKeyboard(p1, p2):
+    one = InlineKeyboardButton(f'До 15 дней | {p1}₽',
+                               callback_data=f'_one={p1}')
+    two = InlineKeyboardButton(f'До 7 дней | {p2}₽',
+                               callback_data=f'_two={p2}')
     kb = InlineKeyboardMarkup(resize_keyboard=True, row_width=1)
     return kb.add(one, two)
 
@@ -90,7 +92,6 @@ mainKb = getMainKeyboard()
 backKb = getBackKeyboard()
 
 cartKb = getCartKeyboard()
-delivKb = getDelivKeyboard()
 confirmKb = getConfirmOrderKeyboard()
 
 exitKb = KeyboardButton('Выход')

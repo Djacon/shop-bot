@@ -195,14 +195,24 @@ async def calculator(message: Message, state):
     rub_price = cyn2rub(cyn_price) + ceil(2.5 * TMP[2]) + 20
 
     async with state.proxy() as data:
-        data['order_price'] = (cyn_price, rub_price)
+        type, size = data['order_type'], data['order_size']
+
+        deliv_price1 = get_delivery_price(type, size, False)
+        deliv_price2 = get_delivery_price(type, size, True)
+
+        price1, price2 = rub_price + deliv_price1, rub_price + deliv_price2
+
+    async with state.proxy() as data:
+        data['order_price'] = cyn_price
 
     await CMD.order_deliv.set()
     await msg_ans.delete()
-    await message.answer(MSG_ORDER_EX5, reply_markup=delivKb)
+    await message.answer(MSG_ORDER_EX5,
+                         reply_markup=getDelivKeyboard(price1, price2))
 
 
-@dp.callback_query_handler(text_startswith='_', state=CMD.order_deliv)
+@dp.callback_query_handler(lambda c: c.data[:4] in ('_one', '_two'),
+                           state=CMD.order_deliv)
 async def calculator(call, state):
     message = call.message
     text = call.data
@@ -212,12 +222,12 @@ async def calculator(call, state):
 
     async with state.proxy() as data:
         type = data['order_type']
-        cyn_price, rub_price = data['order_price']
+        cyn_price = data['order_price']
+        rub_price = int(text.split('=')[1])
         size, src = data['order_size'], data['order_src']
-        deliv_price = get_delivery_price(type, size, text == '2')
 
-        data['order_price'] = rub_price + deliv_price
-        data['order_deliv'] = 'Авто' if text == '_one' else 'Авиа'
+        data['order_price'] = rub_price
+        data['order_deliv'] = 'Авто' if text.startswith('_one') else 'Авиа'
 
         photo = data['order_photo'].file_id
         caption = f'''

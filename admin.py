@@ -23,6 +23,7 @@ async def users(message: Message):
     if not isAdmin(message):
         return await message.answer(MSG_ADMIN_ONLY)
 
+    await message.answer('Начинаю перезагрузку...')
     pid = str(os.getpid())
     with open('restarter.sh', 'w') as restarter:
         restarter.write(f'pkill -9 -f {pid}\ngit pull\npython3 main.py')
