@@ -21,14 +21,15 @@ def getMainKeyboard():
                                   callback_data='search')
     reviews = InlineKeyboardButton('📋 Отзывы о нашей работе ',
                                    callback_data='reviews')
-    mark = InlineKeyboardButton('🛍️ Market OQ (IN STOCK)',
-                                callback_data='market')
+    # mark = InlineKeyboardButton('🛍️ Market OQ (IN STOCK)',
+    #                             callback_data='market')
     ask = InlineKeyboardButton('📞 Связь с нами', callback_data='ask')
     faq = InlineKeyboardButton('❔ FAQ', callback_data='faq')
     cart = InlineKeyboardButton('🛒 Мои заказы', callback_data='cart')
 
     kb = InlineKeyboardMarkup(resize_keyboard=True, row_width=1)
-    return kb.add(order, calc, search, reviews, mark, ask, faq, cart)
+    # return kb.add(order, calc, search, reviews, mark, ask, faq, cart)
+    return kb.add(order, calc, search, reviews, ask, faq, cart)
 
 
 def getOrderKeyboard(msg_id):
@@ -79,9 +80,9 @@ def getDelivKeyboard():
     return kb.add(one, two)
 
 
-def getDefaultOptionKeyboard(name, msg_id=None):
+def getDefaultOptionKb(name, userid):
     one = InlineKeyboardButton(f'По умолчанию: [{name}]',
-                               callback_data=f'_default_{name}')
+                               callback_data=f'_default_{userid}')
     return InlineKeyboardMarkup(resize_keyboard=True, row_width=1).add(one)
 
 

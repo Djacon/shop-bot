@@ -227,19 +227,18 @@ async def calculator(call, state):
 <b>Стоимость в ЮАНЯХ</b>: {cyn_price}
 <b>Стоимость в РУБЛЯХ</b>: {data['order_price']}
 
-❕ <b>Внимание</b>, стоимость указана с расчетом веса товара, так же \
-внимательно проверяйте товар, удалить отдельно один из списка потом не \
-получится.
+❕ Внимание, стоимость указана с расчетом веса товара, так же внимательно \
+проверяйте товар, удалить отдельно один из списка потом не получится.
 
 ⚠ Если Вы по ошибке оплатили неверную сумму, и хотите вернуть свои деньги \
 обратно, заявка на возврат средств обрабатывается в течении 7 рабочих дней. \
 Будьте внимательны! ⚠
 
-⛔ Если Ваш товар стоит больше 2000 юаней, то к стоимости товара следует \
-прибавлять 10% в юанях. 10% взымается за страхование товара, в случае утери \
-или кражи возврат 100% стоимости товара. ⛔
+❗️ Если стоимость ваших товаров превышает 1500¥, то к стоимости товара \
+следует прибавить 5% в юанях, это сумма страховки заказа, в случае \
+утери/кражи полный возврат средств с нашей стороны
 
-🚚 Доставка по России <b>включена</b> в стоимость! Отправки идут из Москвы.
+🚚 Доставка по России включена в стоимость! Отправки идут из Москвы.
         '''
         await CMD.order_confirm.set()
         await msg_ans.delete()
@@ -421,7 +420,31 @@ async def show_cart(call):
     await call.message.delete()
 
     await CMD.cart_fullname.set()
-    await call.message.answer(MSG_CART_FULLNAME, reply_markup=exitKb)
+
+    msg = await call.message.answer(MSG_WAIT, reply_markup=exitKb)
+    await msg.delete()
+
+    userid = str(call.from_user.id)
+    if userid in DB.userdb:
+        kb = getDefaultOptionKb(DB.userdb[userid]['fullname'], userid)
+    else:
+        kb = None
+    await call.message.answer(MSG_CART_FULLNAME, reply_markup=kb)
+
+
+@dp.callback_query_handler(text_startswith='_default', state=CMD.cart_fullname)
+async def calculator(call, state):
+    await call.message.delete()
+    userid = call.data.split('_')[2]
+    text = DB.userdb[userid]['fullname']
+
+    async with state.proxy() as data:
+        data['cart_fullname'] = text
+        await CMD.cart_phone.set()
+
+    kb = getDefaultOptionKb(DB.userdb[userid]['phone'], userid)
+    return await call.message.answer(MSG_CART_PHONE, reply_markup=kb,
+                                     parse_mode='HTML')
 
 
 @dp.message_handler(state=CMD.cart_fullname)
@@ -436,9 +459,31 @@ async def calculator(message: Message, state):
             data['cart_fullname'] = text
 
         await CMD.cart_phone.set()
-        return await message.answer(MSG_CART_PHONE, parse_mode='HTML')
+
+        userid = str(message.from_user.id)
+        if userid in DB.userdb:
+            kb = getDefaultOptionKb(DB.userdb[userid]['phone'], userid)
+        else:
+            kb = None
+        return await message.answer(MSG_CART_PHONE, reply_markup=kb,
+                                    parse_mode='HTML')
 
     await message.answer(MSG_ORDER_ERR)
+
+
+@dp.callback_query_handler(text_startswith='_default', state=CMD.cart_phone)
+async def calculator(call, state):
+    await call.message.delete()
+    userid = call.data.split('_')[2]
+    text = DB.userdb[userid]['phone']
+
+    async with state.proxy() as data:
+        data['cart_phone'] = text
+        await CMD.cart_address.set()
+
+    kb = getDefaultOptionKb(DB.userdb[userid]['address'], userid)
+    return await call.message.answer(MSG_CART_ADDR, reply_markup=kb,
+                                     parse_mode='HTML')
 
 
 @dp.message_handler(state=CMD.cart_phone)
@@ -451,9 +496,45 @@ async def calculator(message: Message, state):
             data['cart_phone'] = text
 
         await CMD.cart_address.set()
-        return await message.answer(MSG_CART_ADDR, parse_mode='HTML')
+
+        userid = str(message.from_user.id)
+        if userid in DB.userdb:
+            kb = getDefaultOptionKb(DB.userdb[userid]['address'], userid)
+        else:
+            kb = None
+        return await message.answer(MSG_CART_ADDR, reply_markup=kb,
+                                    parse_mode='HTML')
 
     await message.answer(MSG_ORDER_ERR)
+
+
+@dp.callback_query_handler(text_startswith='_default', state=CMD.cart_address)
+async def calculator(call, state):
+    await call.message.delete()
+    userid = call.data.split('_')[2]
+    text = DB.userdb[userid]['address']
+
+    async with state.proxy() as data:
+        data['cart_address'] = text
+        await CMD.cart_phone.set()
+
+        caption = f'''
+👤 Ваши данные для получения посылки
+
+<b>ФИО</b>: {data['cart_fullname']}
+<b>Номер телефона</b>: {data['cart_phone']}
+<b>Курьерская служба</b>: СДЭК
+<b>Адрес доставки</b>: {text}
+
+❕ Внимание! Проверяйте данные для получения внимательно, на них будет \
+отправлена посылка по России.
+
+🚚 Доставка по России в оплату ВКЛЮЧЕНА!
+        '''
+
+        await CMD.cart_confirm.set()
+        return await call.message.answer(caption, parse_mode='HTML',
+                                         reply_markup=confirmKb)
 
 
 @dp.message_handler(state=CMD.cart_address)
