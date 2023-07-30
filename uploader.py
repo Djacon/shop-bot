@@ -44,6 +44,6 @@ def upload_user(userinfo, row):
     query = ['Принят']
     query.extend(list(map(str, userinfo)))
     sheets.values().update(spreadsheetId=SHEET_ID,
-                           range=f'Sheet1!O{row}:S{row}',
+                           range=f'Sheet1!O{row}:T{row}',
                            valueInputOption='USER_ENTERED',
                            body={'values': [query]}).execute()

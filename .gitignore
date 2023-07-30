@@ -12,6 +12,7 @@ test.py
 token.json
 orders.json
 users.json
+bank.json
 
 # Shell scripts
 restarter.sh

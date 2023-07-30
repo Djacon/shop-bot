@@ -25,6 +25,7 @@ class CMD(StatesGroup):
     cart_phone = State()
     cart_address = State()
     cart_confirm = State()
+    cart_receipt = State()
 
 
 def get_delivery_price(type, size, by_plane=False):
@@ -237,18 +238,13 @@ async def calculator(call, state):
 <b>Стоимость в ЮАНЯХ</b>: {cyn_price}
 <b>Стоимость в РУБЛЯХ</b>: {data['order_price']}
 
-❕ Внимание, стоимость указана с расчетом веса товара, так же внимательно \
-проверяйте товар, удалить отдельно один из списка потом не получится.
-
-⚠ Если Вы по ошибке оплатили неверную сумму, и хотите вернуть свои деньги \
-обратно, заявка на возврат средств обрабатывается в течении 7 рабочих дней. \
-Будьте внимательны! ⚠
+📌В случае, если вы посчитали или оплатили неправильную сумму, а также сделали \
+заказ со знаком «≈», то будет произведен возврат средств в период от 3 до 5 \
+рабочих дней
 
 ❗️ Если стоимость ваших товаров превышает 1500¥, то к стоимости товара \
 следует прибавить 5% в юанях, это сумма страховки заказа, в случае \
 утери/кражи полный возврат средств с нашей стороны
-
-🚚 Доставка по России включена в стоимость! Отправки идут из Москвы.
         '''
         await CMD.order_confirm.set()
         await msg_ans.delete()
@@ -585,24 +581,45 @@ async def calculator(call, state):
 
     text = call.data
     message = call.message
-    userid = call.from_user.id
-    username = call.from_user.username or userid
 
     if text == '_edit':
+        userid = call.from_user.id
         await state.finish()
         msg = await message.answer('Переход в корзину', reply_markup=noneKb)
         await msg.delete()
         return await show_cartpage(message, userid)
+    elif text == '_yes':
+        await CMD.cart_receipt.set()
+        await message.answer(f'''
+Произведите оплату на банк карты:
+«<b>{DB.bank['name']}</b>»
+И отправьте чек с оплатой боту:
+            ''', reply_markup=exitKb, parse_mode='HTML')
+
+
+@dp.message_handler(state=CMD.cart_receipt, content_types='any')
+async def calculator(message: Message, state):
+    text = message.text
+    userid = message.from_user.id
+    username = message.from_user.username or userid
+
+    if (message.content_type == 'text'
+            and text.lower() in ('выход', '/start')):
+        return await clear_state_and_show_home(message, state)
+    elif message.content_type != 'photo':
+        return await message.answer(MSG_ORDER_ERR)
 
     msg_ans = await message.answer(MSG_WAIT, reply_markup=noneKb)
 
     try:
         count_purchase = len(DB.getOrders(userid))
         async with state.proxy() as data:
+            photo_src = message.photo[-1].file_id
             userinfo = (f't.me/{username}', data['cart_fullname'],
-                        data['cart_phone'], data['cart_address'])
+                        data['cart_phone'], data['cart_address'],
+                        photo_src)
             DB.addUserinfo(userid, userinfo)
-            DB.uploadCart(userid, userinfo)
+            # DB.uploadCart(userid, userinfo)
             caption = f'''
 Информация о новом покупателе:
 
@@ -612,8 +629,8 @@ async def calculator(call, state):
 <b>Адрес доставки</b>: {userinfo[3]}
 <b>Кол-во товаров</b> {count_purchase}'''
 
-        for ADMIN_ID in ADMIN_IDS:
-            await bot.send_message(ADMIN_ID, caption, parse_mode='HTML')
+        # for ADMIN_ID in ADMIN_IDS:
+        #     await bot.send_message(ADMIN_ID, caption, parse_mode='HTML')
 
         await state.finish()
         await msg_ans.delete()

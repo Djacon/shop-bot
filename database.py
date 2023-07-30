@@ -4,9 +4,10 @@ from uploader import upload_orders, upload_user, get_orders_user_count_info
 
 # Класс для работы с БД пользователей и их заказами
 class ShopDB:
-    def __init__(self, order_fn, user_fn):
+    def __init__(self, order_fn, user_fn, bank_fn):
         self.order_fn = order_fn
         self.user_fn = user_fn
+        self.bank_fn = bank_fn
 
         try:
             with open(order_fn, 'r') as f:
@@ -23,6 +24,15 @@ class ShopDB:
             with open(user_fn, 'w') as f:
                 f.write('{}')
                 self.userdb = {}
+
+        try:
+            with open(bank_fn, 'r') as f:
+                self.bank = json.load(f)
+        except FileNotFoundError:
+            with open(bank_fn, 'w') as f:
+                name = "Тинькофф 5536 9141 0306 7959 Обада Киспе Марк Антонио"
+                self.bank = {'name': name}
+                json.dump(self.bank, f)
 
     def addUser(self, userid):
         self.db[str(userid)] = []
@@ -75,9 +85,14 @@ class ShopDB:
         with open(self.user_fn, 'w') as f:
             json.dump(self.userdb, f)
 
+    def editBank(self, name):
+        self.bank['name'] = name
+        with open(self.bank_fn, 'w') as f:
+            json.dump(self.bank, f)
+
     def _save(self):
         with open(self.order_fn, 'w') as f:
             json.dump(self.db, f)
 
 
-DB = ShopDB('orders.json', 'users.json')
+DB = ShopDB('orders.json', 'users.json', 'bank.json')
