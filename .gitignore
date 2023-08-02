@@ -10,6 +10,7 @@ photos/
 # Secret Files
 test.py
 token.json
+secret.json
 orders.json
 users.json
 bank.json

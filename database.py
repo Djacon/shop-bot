@@ -1,5 +1,6 @@
 import json
 from uploader import upload_orders, upload_user, get_orders_user_count_info
+from uploader import clear_unnecessary_orders_and_get_row_id
 
 
 # Класс для работы с БД пользователей и их заказами
@@ -65,11 +66,12 @@ class ShopDB:
         self._save()
 
     def uploadCart(self, userid, userinfo):
+        row_id = clear_unnecessary_orders_and_get_row_id()
         order_row, user_row = get_orders_user_count_info()
 
         userid = str(userid)
-        upload_user(userinfo, user_row)
-        upload_orders(userinfo[0], self.db[userid], order_row)
+        upload_user(row_id, userinfo, user_row)
+        upload_orders(row_id, userinfo[0], self.db[userid], order_row)
 
         self.db[userid] = []
         self._save()

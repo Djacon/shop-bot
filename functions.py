@@ -614,12 +614,12 @@ async def calculator(message: Message, state):
     try:
         count_purchase = len(DB.getOrders(userid))
         async with state.proxy() as data:
-            photo_src = message.photo[-1].file_id
+            photo_src = await get_filepath(message.photo[-1])
             userinfo = (f't.me/{username}', data['cart_fullname'],
                         data['cart_phone'], data['cart_address'],
                         photo_src)
             DB.addUserinfo(userid, userinfo)
-            # DB.uploadCart(userid, userinfo)
+            DB.uploadCart(userid, userinfo)
             caption = f'''
 Информация о новом покупателе:
 
@@ -629,8 +629,8 @@ async def calculator(message: Message, state):
 <b>Адрес доставки</b>: {userinfo[3]}
 <b>Кол-во товаров</b> {count_purchase}'''
 
-        # for ADMIN_ID in ADMIN_IDS:
-        #     await bot.send_message(ADMIN_ID, caption, parse_mode='HTML')
+        for ADMIN_ID in ADMIN_IDS:
+            await bot.send_message(ADMIN_ID, caption, parse_mode='HTML')
 
         await state.finish()
         await msg_ans.delete()
