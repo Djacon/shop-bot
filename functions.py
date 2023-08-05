@@ -284,14 +284,12 @@ async def calculator(call, state):
 # Запустить окно с калькулятором стоимости
 @dp.callback_query_handler(lambda c: c.data == 'calc')
 async def show_calc(call):
-    # await call.message.answer(MSG_CALC, reply_markup=exitKb)
-
     await call.message.delete()
     await CMD.calc_type.set()
 
     photo = open('img/instruction.jpg', 'rb')
     await call.message.answer_photo(
-        photo, caption=MSG_CALC_MAIN,
+        photo, caption=MSG_ORDER,
         parse_mode='HTML',
         reply_markup=getOrderKeyboard(0))
 
@@ -398,8 +396,11 @@ async def calculator(call, state):
     async with state.proxy() as data:
         data['calc_type'] = cat
 
+    photo = open('img/example4.jpg', 'rb')
     await CMD.calc_price.set()
-    await call.message.answer(MSG_CALC, reply_markup=exitKb)
+    await message.answer_photo(
+        photo, caption=MSG_ORDER_EX4, parse_mode='HTML',
+        reply_markup=exitKb)
 
 
 @dp.message_handler(state=CMD.calc_price)
