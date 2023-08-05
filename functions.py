@@ -60,15 +60,19 @@ async def clear_state_and_show_home(message, state):
     await show_homepage(message)
 
 
-async def show_order(message):
+async def show_order(call):
+    if len(DB.getOrders(call.from_user.id)) > 9:
+        return await call.message.answer(MSG_TOO_MANY_ORDERS,
+                                         reply_markup=manyOrderKb)
+
     photo = open('img/guide.jpg', 'rb')
-    guide = await message.answer_photo(
+    guide = await call.message.answer_photo(
         photo, caption='<b>Гайд "Как правильно оформить заказ</b>"',
         parse_mode='HTML', reply_markup=noneKb)
     msg_id = guide.message_id
 
     photo = open('img/instruction.jpg', 'rb')
-    await message.answer_photo(
+    await call.message.answer_photo(
         photo, caption=MSG_ORDER,
         parse_mode='HTML',
         reply_markup=getOrderKeyboard(msg_id))
@@ -77,7 +81,7 @@ async def show_order(message):
 @dp.callback_query_handler(lambda c: c.data == 'order')
 async def showOrder(call):
     await call.message.delete()
-    await show_order(call.message)
+    await show_order(call)
 
 
 # Вернуться на главную страницу /start
@@ -144,7 +148,7 @@ async def calculator(message: Message, state):
     text = message.text.lower()
     if text in ('выход', '/start'):
         return await clear_state_and_show_home(message, state)
-    elif len(text) < 101 and text.startswith('https://dw4.co/t/a/'):
+    elif len(text) < 101 and match(r'https:\/\/dw4\.co\/t\/a\/\w+', text):
         async with state.proxy() as data:
             data['order_src'] = text
 
@@ -264,7 +268,7 @@ async def calculator(call, state):
     text = call.data
     if text == '_edit':
         await state.finish()
-        return await show_order(message)
+        return await show_order(call)
 
     userid = call.from_user.id
     async with state.proxy() as data:

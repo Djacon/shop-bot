@@ -86,10 +86,18 @@ def getDefaultOptionKb(name, userid):
     return InlineKeyboardMarkup(resize_keyboard=True, row_width=1).add(one)
 
 
+def getManyOrderKeyboard():
+    cart = InlineKeyboardButton('🛒 Перейти в корзину', callback_data='cart')
+    cancel = InlineKeyboardButton('↪️ Вернуться в меню',
+                                  callback_data='homepage')
+    return InlineKeyboardMarkup(resize_keyboard=True).row(cart).row(cancel)
+
+
 mainKb = getMainKeyboard()
 backKb = getBackKeyboard()
 
 cartKb = getCartKeyboard()
+manyOrderKb = getManyOrderKeyboard()
 confirmKb = getConfirmOrderKeyboard()
 
 exitKb = KeyboardButton('Выход')
