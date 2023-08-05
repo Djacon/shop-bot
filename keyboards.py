@@ -40,12 +40,10 @@ def getOrderKeyboard(msg_id):
     for type in ITEM_TYPE:
         btns.append(InlineKeyboardButton(ITEM_TYPE[type],
                                          callback_data=f'{prchs}{type}'))
-    search = InlineKeyboardButton('🔍 Где найти цену в юанях?',
-                                  callback_data='order2search')
     cancel = InlineKeyboardButton('↪️ Вернуться в меню',
                                   callback_data=f'order2home?{msg_id}')
     kb = InlineKeyboardMarkup(resize_keyboard=True, row_width=1)
-    return kb.row(search).row(btns[0], btns[1]).add(*btns[2:], cancel)
+    return kb.row(btns[0], btns[1]).add(*btns[2:], cancel)
 
 
 def getConfirmOrderKeyboard():
@@ -74,9 +72,9 @@ def getCartKeyboard():
 
 
 def getDelivKeyboard(p1, p2):
-    one = InlineKeyboardButton(f'До 15 дней | {p1}₽',
+    one = InlineKeyboardButton(f'🚚 Обычная: 14 - 18 дн. ({p1}₽)',
                                callback_data=f'_one={p1}')
-    two = InlineKeyboardButton(f'До 7 дней | {p2}₽',
+    two = InlineKeyboardButton(f'✈️ Экспресс: 4 - 8 дн. ({p2}₽)',
                                callback_data=f'_two={p2}')
     kb = InlineKeyboardMarkup(resize_keyboard=True, row_width=1)
     return kb.add(one, two)

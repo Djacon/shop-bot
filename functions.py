@@ -11,7 +11,8 @@ from imports import *
 
 # Класс для работы с выбранными командами
 class CMD(StatesGroup):
-    calc = State()
+    calc_type = State()
+    calc_price = State()
     ###
     order_type = State()
     order_photo = State()
@@ -242,7 +243,7 @@ async def calculator(call, state):
 заказ со знаком «≈», то будет произведен возврат средств в период от 3 до 5 \
 рабочих дней
 
-❗️ Если стоимость ваших товаров превышает 1500¥, то к стоимости товара \
+❗️Если стоимость ваших товаров превышает 1500¥, то к стоимости товара \
 следует прибавить 5% в юанях, это сумма страховки заказа, в случае \
 утери/кражи полный возврат средств с нашей стороны
         '''
@@ -283,9 +284,16 @@ async def calculator(call, state):
 # Запустить окно с калькулятором стоимости
 @dp.callback_query_handler(lambda c: c.data == 'calc')
 async def show_calc(call):
+    # await call.message.answer(MSG_CALC, reply_markup=exitKb)
+
     await call.message.delete()
-    await CMD.calc.set()
-    await call.message.answer(MSG_CALC, reply_markup=exitKb)
+    await CMD.calc_type.set()
+
+    photo = open('img/instruction.jpg', 'rb')
+    await call.message.answer_photo(
+        photo, caption=MSG_CALC_MAIN,
+        parse_mode='HTML',
+        reply_markup=getOrderKeyboard(0))
 
 
 # Ссылка на отзывы
@@ -371,24 +379,56 @@ def cyn2rub(amount):
 
 
 # Сцена для тестовой модели
-@dp.message_handler(state=CMD.calc)
-async def calculator(message: Message, state):
-    amount = message.text
+@dp.callback_query_handler(state=CMD.calc_type)
+async def calculator(call, state):
+    await call.message.delete()
 
-    if amount.lower() in ('выход', '/start'):
+    message = call.message
+    cat = call.data
+
+    if cat == 'order2home?0':
+        return await clear_state_and_show_home(message, state)
+
+    cat = cat[11:]
+
+    if cat == 'access':
+        await state.finish()
+        return await call.message.answer(MSG_ORDER_ACS, reply_markup=backKb)
+
+    async with state.proxy() as data:
+        data['calc_type'] = cat
+
+    await CMD.calc_price.set()
+    await call.message.answer(MSG_CALC, reply_markup=exitKb)
+
+
+@dp.message_handler(state=CMD.calc_price)
+async def calculator(message: Message, state):
+    amount = message.text.lower()
+
+    if amount in ('выход', '/start'):
         return await clear_state_and_show_home(message, state)
 
     if len(amount) > 6:
         return await message.answer('Слишком большой ввод!')
 
     if not amount.isdigit() or amount == '0':
-        return await message.answer(f'Некорректный ввод: `{amount}`')
+        return await message.answer(MSG_ORDER_ERR)
 
     msg_ans = await message.answer(MSG_WAIT)
 
-    rub = cyn2rub(int(amount))
+    async with state.proxy() as data:
+        cat = data['calc_type']
 
-    msg = f'💰 Итоговая стоимость {rub} руб с доставкой до России'
+    rub = cyn2rub(int(amount))
+    auto = get_delivery_price(cat, 38, False)
+    aero = get_delivery_price(cat, 38, True)
+
+    msg = f'''
+Итоговая стоимость с доставкой до России составляет:
+🚚 Обычная (14-18 дн.): {rub + auto} руб.
+✈️ Экспресс (4-8 дн.): {rub + aero} руб.
+    '''
     await msg_ans.edit_text(msg)
 
 
