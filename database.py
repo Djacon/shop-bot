@@ -5,10 +5,11 @@ from uploader import clear_unnecessary_orders_and_get_row_id
 
 # Класс для работы с БД пользователей и их заказами
 class ShopDB:
-    def __init__(self, order_fn, user_fn, bank_fn):
+    def __init__(self, order_fn, user_fn, bank_fn, rate_fn):
         self.order_fn = order_fn
         self.user_fn = user_fn
         self.bank_fn = bank_fn
+        self.rate_fn = rate_fn
 
         try:
             with open(order_fn, 'r') as f:
@@ -34,6 +35,14 @@ class ShopDB:
                 name = "Тинькофф 5536 9141 0306 7959 Обада Киспе Марк Антонио"
                 self.bank = {'name': name}
                 json.dump(self.bank, f)
+
+        try:
+            with open(rate_fn, 'r') as f:
+                self.rate = json.load(f)
+        except FileNotFoundError:
+            with open(rate_fn, 'w') as f:
+                self.rate = {'price': 14.3}
+                json.dump(self.rate, f)
 
     def addUser(self, userid):
         self.db[str(userid)] = []
@@ -92,9 +101,14 @@ class ShopDB:
         with open(self.bank_fn, 'w') as f:
             json.dump(self.bank, f)
 
+    def editRate(self, price):
+        self.rate['price'] = price
+        with open(self.rate_fn, 'w') as f:
+            json.dump(self.rate, f)
+
     def _save(self):
         with open(self.order_fn, 'w') as f:
             json.dump(self.db, f)
 
 
-DB = ShopDB('orders.json', 'users.json', 'bank.json')
+DB = ShopDB('orders.json', 'users.json', 'bank.json', 'rate.json')

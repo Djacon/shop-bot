@@ -14,6 +14,11 @@ MSG_ADMIN_CARD = '''
 /changebank Тинькофф XXXX XXXX XXXX XXXX Антон Павлов
 '''
 
+MSG_ADMIN_RATE = '''
+Введите новый курс в формате:\n
+/changerate 14.3
+'''
+
 ASK_MSG = '''
 По всем вопросам насчёт заказа обращайтесь к аккаунту поддержки ❕
 

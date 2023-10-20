@@ -198,7 +198,7 @@ async def calculator(message: Message, state):
 
     cyn_price = int(text)
     # rub_price = (юань-рубль) + комиссия
-    rub_price = cyn2rub(cyn_price) + ceil(2.5 * TMP[2]) + 20
+    rub_price = cyn2rub(cyn_price + 22)
 
     async with state.proxy() as data:
         type, size = data['order_type'], data['order_size']
@@ -349,35 +349,10 @@ PAYLOAD = {"fiat": "RUB", "page": 1, "rows": 10, "tradeType": "BUY",
            "shieldMerchantAds": False, "publisherType": None,
            "payTypes": ["TinkoffNew"], "transAmount": 1000}
 
-# (Time | USDT2CNY | USDT2RUB)
-TMP = (0, 7.11, 91.69)
-
-
-def usdt2cny(amount):
-    res = json.loads(requests.get(f'{URL_HUO}{amount}&currPage=1').content)
-    data = [float(data['price']) for data in res['data']]
-
-    res = json.loads(requests.get(f'{URL_HUO}{amount}&currPage=2').content)
-    data.extend([float(data['price']) for data in res['data']])
-    return round(median(data), 2)
-
-
-def usdt2rub():
-    res = json.loads(requests.post(URL_BIN, json=PAYLOAD).content)
-    data = [float(data['adv']['price']) for data in res['data']]
-    return round(median(data), 2)
-
 
 # Перевести цену с юаней в рубли
 def cyn2rub(amount):
-    global TMP
-
-    t = int(time())
-    if t - TMP[0] > 59:
-        usd = usdt2cny(max(amount, 100))
-        rub = usdt2rub()
-        TMP = (t, usd, rub)
-    return ceil((amount / TMP[1]) * TMP[2])
+    return ceil(amount * DB.rate['price'])
 
 
 # Сцена для тестовой модели
